@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Suspense, useState, type FormEvent } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Mail } from "lucide-react"
 
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser"
@@ -11,15 +11,12 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 
-function LoginForm() {
+function SignupForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const redirectedFrom = searchParams.get("redirectedFrom") || "/"
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -29,18 +26,18 @@ function LoginForm() {
     try {
       const supabase = getSupabaseBrowserClient()
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
       })
 
-      if (signInError) {
-        setError(signInError.message)
+      if (signUpError) {
+        setError(signUpError.message)
         setLoading(false)
         return
       }
 
-      router.push(redirectedFrom)
+      router.push("/")
       router.refresh()
     } catch (err: any) {
       setError(err?.message || "Une erreur est survenue.")
@@ -56,10 +53,10 @@ function LoginForm() {
             <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Mail className="size-4" />
             </span>
-            Se connecter à ViewReview
+            Créer un compte ViewReview
           </CardTitle>
           <CardDescription>
-            Connectez-vous avec votre compte Supabase pour accéder au dashboard des avis.
+            Inscrivez-vous avec votre email pour accéder au dashboard des avis.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -81,9 +78,9 @@ function LoginForm() {
               <Input
                 id="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 required
-                placeholder="Votre mot de passe"
+                placeholder="Choisissez un mot de passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -100,16 +97,16 @@ function LoginForm() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? "Connexion en cours..." : "Se connecter"}
+              {loading ? "Inscription en cours..." : "S'inscrire"}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Pas encore de compte ?{" "}
+            Déjà un compte ?{" "}
             <Link
-              href="/signup"
+              href="/login"
               className="font-medium text-primary hover:underline"
             >
-              S'inscrire
+              Se connecter
             </Link>
           </p>
         </CardContent>
@@ -118,10 +115,11 @@ function LoginForm() {
   )
 }
 
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Chargement...</div>}>
-      <LoginForm />
+      <SignupForm />
     </Suspense>
   )
 }
+
