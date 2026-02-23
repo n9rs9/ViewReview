@@ -1,4 +1,4 @@
- "use client"
+"use client"
 
 import { useEffect, useState } from "react"
 import {
@@ -9,22 +9,15 @@ import {
   subDays,
 } from "date-fns"
 import { fr } from "date-fns/locale"
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts"
 
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { StatsBar } from "@/components/dashboard/stats-bar"
+import { CryptoCards } from "@/components/dashboard/crypto-cards"
+import { PortfolioSection } from "@/components/dashboard/portfolio-section"
+import { ReviewTrendChart } from "@/components/dashboard/review-trend-chart"
 import { ReviewGrid } from "@/components/dashboard/review-grid"
 import type { Review, Sentiment } from "@/components/dashboard/review-card"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser"
 
 export const dynamic = "force-dynamic"
@@ -115,82 +108,11 @@ function buildMockTrendData(): TrendPoint[] {
   })
 }
 
-function ReviewTrendChart({ data }: { data: TrendPoint[] }) {
-  return (
-    <Card className="h-full rounded-3xl border border-[#8b5cf6]/35 bg-[rgba(15,15,25,0.9)] shadow-[0_24px_80px_rgba(0,0,0,0.95)] backdrop-blur-2xl">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          Évolution du nombre d'avis (7 derniers jours)
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="h-60 pt-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
-            <defs>
-              <linearGradient
-                id="reviewsGradient"
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop
-                  offset="0%"
-                  stopColor="var(--chart-1)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="100%"
-                  stopColor="var(--chart-1)"
-                  stopOpacity={0.05}
-                />
-              </linearGradient>
-            </defs>
-            <CartesianGrid
-              stroke="var(--border)"
-              strokeDasharray="3 3"
-              vertical={false}
-            />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-            />
-            <YAxis
-              allowDecimals={false}
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-            />
-            <Tooltip
-              cursor={{ stroke: "var(--chart-1)", strokeWidth: 1, opacity: 0.2 }}
-              contentStyle={{
-                backgroundColor: "var(--card)",
-                borderRadius: 12,
-                border: "1px solid var(--border)",
-              }}
-              labelStyle={{ color: "var(--muted-foreground)" }}
-            />
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke="var(--chart-1)"
-              strokeWidth={2.4}
-              strokeOpacity={0.95}
-              fill="url(#reviewsGradient)"
-              className="drop-shadow-[0_0_20px_rgba(139,92,246,0.95)]"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
-  )
-}
-
 export default function Page() {
   const [reviews, setReviews] = useState<Review[]>([])
-  const [trendData, setTrendData] = useState<TrendPoint[]>(() => buildMockTrendData())
+  const [trendData, setTrendData] = useState<TrendPoint[]>(() =>
+    buildMockTrendData()
+  )
   const [totalReviews, setTotalReviews] = useState(0)
   const [averageRating, setAverageRating] = useState<number | null>(null)
   const [positivePercentage, setPositivePercentage] = useState<number | null>(
@@ -205,6 +127,15 @@ export default function Page() {
     let isMounted = true
 
     async function fetchData() {
+      if (!supabase) {
+        // No Supabase credentials configured — show demo state
+        if (isMounted) {
+          setError(null)
+          setLoading(false)
+        }
+        return
+      }
+
       try {
         const {
           data: { user },
@@ -213,9 +144,12 @@ export default function Page() {
 
         if (userError || !user) {
           if (!user) {
-            setError("Vous devez être connecté pour voir vos avis.")
+            setError("Vous devez etre connecte pour voir vos avis.")
           } else {
-            setError(userError?.message ?? "Erreur lors de la récupération de l'utilisateur.")
+            setError(
+              userError?.message ??
+                "Erreur lors de la recuperation de l'utilisateur."
+            )
           }
           return
         }
@@ -236,9 +170,10 @@ export default function Page() {
 
         const mapped: Review[] = (data ?? []).map((row: any) => {
           const createdAt = row.created_at ?? new Date().toISOString()
-          const rawRating = typeof row.rating === "number"
-            ? row.rating
-            : Number(row.rating ?? 0)
+          const rawRating =
+            typeof row.rating === "number"
+              ? row.rating
+              : Number(row.rating ?? 0)
           const rating = Number.isFinite(rawRating) ? rawRating : 0
 
           const sentiment: Sentiment =
@@ -257,7 +192,7 @@ export default function Page() {
                   addSuffix: true,
                   locale: fr,
                 })
-              : "—",
+              : "\u2014",
             rating,
             createdAt,
           }
@@ -290,29 +225,33 @@ export default function Page() {
   }, [])
 
   return (
-    <div className="flex h-screen overflow-hidden bg-black">
+    <div className="flex h-screen overflow-hidden bg-background">
       <DashboardSidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <DashboardHeader />
-        <main className="flex-1 overflow-y-auto px-6 py-6 lg:px-8">
-          <div className="mx-auto flex max-w-7xl flex-col gap-8">
-            <section className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-1">
-                <StatsBar
-                  totalReviews={totalReviews}
-                  averageRating={averageRating}
-                  reviewsThisMonth={reviewsThisMonth}
-                  positivePercentage={positivePercentage}
-                  sparklineData={trendData}
-                />
-              </div>
-              <div className="lg:col-span-2">
-                <ReviewTrendChart data={trendData} />
-              </div>
-            </section>
+        <main className="flex-1 overflow-y-auto bg-secondary/50 px-6 py-6">
+          <div className="mx-auto flex max-w-7xl flex-col gap-6">
+            {/* Total Balance */}
+            <StatsBar
+              totalReviews={totalReviews}
+              averageRating={averageRating}
+              reviewsThisMonth={reviewsThisMonth}
+              positivePercentage={positivePercentage}
+              sparklineData={trendData}
+            />
 
+            {/* Crypto cards row */}
+            <CryptoCards />
+
+            {/* Bottom section: Portfolio + Chart */}
+            <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+              <PortfolioSection reviews={reviews} />
+              <ReviewTrendChart data={trendData} />
+            </div>
+
+            {/* Reviews section */}
             <section>
-              <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
                 Derniers avis clients
               </h2>
               {loading && (
@@ -321,13 +260,12 @@ export default function Page() {
                 </p>
               )}
               {error && !loading && (
-                <p className="text-sm text-destructive">
-                  {error}
-                </p>
+                <p className="text-sm text-[#ef4444]">{error}</p>
               )}
               {!loading && !error && reviews.length === 0 && (
                 <p className="text-sm text-muted-foreground">
-                  Aucun avis pour le moment. Connectez vos sources et commencez à collecter des retours clients.
+                  Aucun avis pour le moment. Connectez vos sources et commencez
+                  a collecter des retours clients.
                 </p>
               )}
               {!loading && !error && reviews.length > 0 && (

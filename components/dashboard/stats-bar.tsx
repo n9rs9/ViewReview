@@ -10,6 +10,7 @@ interface StatsBarProps {
   totalReviews: number
   averageRating: number | null
   reviewsThisMonth: number
+  positivePercentage: number | null
   sparklineData: SparklinePoint[]
 }
 
@@ -58,6 +59,7 @@ export function StatsBar({
   totalReviews,
   averageRating,
   reviewsThisMonth,
+  positivePercentage,
   sparklineData,
 }: StatsBarProps) {
   const cards = [
@@ -82,10 +84,19 @@ export function StatsBar({
       helper: "Avis reçus depuis le 1er",
       icon: Clock3,
     },
+    {
+      label: "Taux de satisfaction",
+      value:
+        typeof positivePercentage === "number"
+          ? `${positivePercentage.toFixed(0)}%`
+          : "—",
+      helper: "Part des avis positifs",
+      icon: MessageSquareText,
+    },
   ]
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
         <div
           key={card.label}
