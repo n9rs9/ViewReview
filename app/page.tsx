@@ -6,6 +6,7 @@ import { StatsBar } from "@/components/dashboard/stats-bar"
 import { ReviewGrid } from "@/components/dashboard/review-grid"
 import { supabase } from "@/lib/supabase"
 import type { Review, Sentiment } from "@/components/dashboard/review-card"
+export const dynamic = 'force-dynamic';
 
 function getInitials(name: string): string {
   const parts = String(name || "").trim().split(/\s+/).filter(Boolean)
