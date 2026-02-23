@@ -26,7 +26,7 @@ function SignupForm() {
     try {
       const supabase = getSupabaseBrowserClient()
 
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
       })
@@ -36,6 +36,8 @@ function SignupForm() {
         setLoading(false)
         return
       }
+
+      console.log("Utilisateur créé :", data?.user)
 
       router.push("/")
       router.refresh()
