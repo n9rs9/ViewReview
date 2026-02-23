@@ -1,126 +1,73 @@
-import { MessageSquareText, Star, Clock3 } from "lucide-react"
-import { Area, AreaChart, ResponsiveContainer } from "recharts"
+import { Badge } from "@/components/ui/badge"
+import { MessageSquareText, TrendingUp, TrendingDown, Minus } from "lucide-react"
 
-type SparklinePoint = {
-  date: string
-  value: number
-}
+const stats = [
+  {
+    label: "Total Reviews",
+    value: "1,284",
+    icon: MessageSquareText,
+    change: "+12%",
+    trend: "up" as const,
+  },
+  {
+    label: "Positive",
+    value: "842",
+    icon: TrendingUp,
+    change: "+8%",
+    trend: "up" as const,
+  },
+  {
+    label: "Neutral",
+    value: "319",
+    icon: Minus,
+    change: "-2%",
+    trend: "neutral" as const,
+  },
+  {
+    label: "Negative",
+    value: "123",
+    icon: TrendingDown,
+    change: "-5%",
+    trend: "down" as const,
+  },
+]
 
-interface StatsBarProps {
-  totalReviews: number
-  averageRating: number | null
-  reviewsThisMonth: number
-  positivePercentage: number | null
-  sparklineData: SparklinePoint[]
-}
-
-function Sparkline({ data }: { data: SparklinePoint[] }) {
-  if (!data.length) return null
-
+export function StatsBar() {
   return (
-    <div className="mt-2 h-8 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data}>
-          <defs>
-            <linearGradient
-              id="sparklineGradient"
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
-              <stop
-                offset="0%"
-                stopColor="var(--chart-1)"
-                stopOpacity={0.8}
-              />
-              <stop
-                offset="100%"
-                stopColor="var(--chart-1)"
-                stopOpacity={0}
-              />
-            </linearGradient>
-          </defs>
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke="var(--chart-1)"
-            strokeWidth={1.6}
-            fill="url(#sparklineGradient)"
-            className="drop-shadow-[0_0_12px_rgba(139,92,246,0.9)]"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
-
-export function StatsBar({
-  totalReviews,
-  averageRating,
-  reviewsThisMonth,
-  positivePercentage,
-  sparklineData,
-}: StatsBarProps) {
-  const cards = [
-    {
-      label: "Total avis",
-      value: totalReviews.toLocaleString("fr-FR"),
-      helper: "Tous les avis enregistrés",
-      icon: MessageSquareText,
-    },
-    {
-      label: "Note moyenne",
-      value:
-        averageRating && averageRating > 0
-          ? `${averageRating.toFixed(1)}/5`
-          : "—",
-      helper: "Basée sur les notes clients",
-      icon: Star,
-    },
-    {
-      label: "Nouveaux ce mois-ci",
-      value: reviewsThisMonth.toLocaleString("fr-FR"),
-      helper: "Avis reçus depuis le 1er",
-      icon: Clock3,
-    },
-    {
-      label: "Taux de satisfaction",
-      value:
-        typeof positivePercentage === "number"
-          ? `${positivePercentage.toFixed(0)}%`
-          : "—",
-      helper: "Part des avis positifs",
-      icon: MessageSquareText,
-    },
-  ]
-
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map((card) => (
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {stats.map((stat) => (
         <div
-          key={card.label}
-          className="group flex flex-col justify-between gap-2 rounded-3xl border border-[#8b5cf6]/30 bg-[rgba(15,15,25,0.9)] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.9)] backdrop-blur-2xl"
+          key={stat.label}
+          className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4"
         >
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/15 transition-all group-hover:bg-primary/25 group-hover:shadow-[0_0_18px_rgba(139,92,246,0.95)]">
-              <card.icon className="size-5 text-primary" />
-            </div>
-            <div className="flex flex-1 flex-col gap-1">
-              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {card.label}
+          <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+            <stat.icon className="size-5 text-primary" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">
+              {stat.label}
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold text-foreground">
+                {stat.value}
               </span>
-              <span className="text-3xl font-bold tracking-tight text-foreground">
-                {card.value}
-              </span>
-              <span className="text-[11px] text-muted-foreground">
-                {card.helper}
-              </span>
+              <Badge
+                variant="outline"
+                className={
+                  stat.trend === "up"
+                    ? "border-transparent bg-emerald-500/15 text-emerald-400 text-[10px] px-1.5 py-0"
+                    : stat.trend === "down"
+                    ? "border-transparent bg-rose-500/15 text-rose-400 text-[10px] px-1.5 py-0"
+                    : "border-transparent bg-amber-500/15 text-amber-400 text-[10px] px-1.5 py-0"
+                }
+              >
+                {stat.change}
+              </Badge>
             </div>
           </div>
-          <Sparkline data={sparklineData} />
         </div>
       ))}
     </div>
   )
 }
+
