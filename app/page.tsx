@@ -24,11 +24,16 @@ function normalizeSentiment(value: unknown): Sentiment {
 }
 
 export default async function Page() {
-  // 1. Récupérer la session utilisateur
+  // 1. Récupérer la session
   const { data: { session } } = await supabase.auth.getSession()
   
+  // Si pas de session, on n'affiche rien ou un message simple au lieu de rediriger
   if (!session) {
-    redirect("/login") // Ou ta page de connexion
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p>Veuillez vous connecter pour accéder au dashboard.</p>
+      </div>
+    )
   }
 
   const userId = session.user.id
