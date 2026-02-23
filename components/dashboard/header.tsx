@@ -74,7 +74,7 @@ export function DashboardHeader() {
           <Button
             onClick={handleSync}
             disabled={syncing}
-            className="bg-primary text-primary-foreground hover:bg-primary/80"
+            className="bg-gradient-to-r from-[#8b5cf6] via-[#a855f7] to-[#6366f1] text-primary-foreground shadow-[0_0_18px_rgba(139,92,246,0.85)] transition-all hover:shadow-[0_0_28px_rgba(139,92,246,1)] hover:brightness-110 hover:-translate-y-[1px]"
           >
             <RefreshCw
               className={cn("size-4", syncing && "animate-spin")}

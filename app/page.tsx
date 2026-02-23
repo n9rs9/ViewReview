@@ -104,9 +104,20 @@ function buildTrendData(reviews: Review[]): TrendPoint[] {
   return buckets
 }
 
+function buildMockTrendData(): TrendPoint[] {
+  const today = startOfDay(new Date())
+  const baseValues = [6, 9, 7, 11, 10, 14, 12]
+
+  return baseValues.map((value, index) => {
+    const day = subDays(today, baseValues.length - 1 - index)
+    const label = format(day, "dd MMM", { locale: fr })
+    return { date: label, value }
+  })
+}
+
 function ReviewTrendChart({ data }: { data: TrendPoint[] }) {
   return (
-    <Card className="h-full rounded-2xl border border-border/70 bg-[#0a0616] shadow-xl shadow-primary/20">
+    <Card className="h-full rounded-3xl border border-[#8b5cf6]/35 bg-[rgba(15,15,25,0.9)] shadow-[0_24px_80px_rgba(0,0,0,0.95)] backdrop-blur-2xl">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           Évolution du nombre d'avis (7 derniers jours)
@@ -168,7 +179,7 @@ function ReviewTrendChart({ data }: { data: TrendPoint[] }) {
               strokeWidth={2.4}
               strokeOpacity={0.95}
               fill="url(#reviewsGradient)"
-              className="drop-shadow-[0_0_16px_rgba(168,85,247,0.9)]"
+              className="drop-shadow-[0_0_20px_rgba(139,92,246,0.95)]"
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -179,7 +190,7 @@ function ReviewTrendChart({ data }: { data: TrendPoint[] }) {
 
 export default function Page() {
   const [reviews, setReviews] = useState<Review[]>([])
-  const [trendData, setTrendData] = useState<TrendPoint[]>([])
+  const [trendData, setTrendData] = useState<TrendPoint[]>(() => buildMockTrendData())
   const [totalReviews, setTotalReviews] = useState(0)
   const [averageRating, setAverageRating] = useState<number | null>(null)
   const [positivePercentage, setPositivePercentage] = useState<number | null>(
@@ -255,7 +266,8 @@ export default function Page() {
         if (!isMounted) return
 
         const stats = buildStats(mapped)
-        const trend = buildTrendData(mapped)
+        const trend =
+          mapped.length > 0 ? buildTrendData(mapped) : buildMockTrendData()
 
         setReviews(mapped)
         setTotalReviews(stats.totalReviews)
@@ -278,7 +290,7 @@ export default function Page() {
   }, [])
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#05030f]">
+    <div className="flex h-screen overflow-hidden bg-black">
       <DashboardSidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <DashboardHeader />

@@ -33,7 +33,7 @@ function getBadgeConfig(rating: number) {
 
   return {
     label: "Avis neutre",
-    className: "border-transparent bg-amber-500/15 text-amber-400",
+    className: "border-transparent bg-[rgba(139,92,246,0.12)] text-[#c4b5fd]",
   }
 }
 
@@ -52,7 +52,7 @@ export function ReviewCard({ review }: { review: Review }) {
             "flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
             safeRating >= 4 && "bg-emerald-500/15 text-emerald-400",
             safeRating <= 2 && "bg-rose-500/15 text-rose-400",
-            safeRating > 2 && safeRating < 4 && "bg-amber-500/15 text-amber-400"
+            safeRating > 2 && safeRating < 4 && "bg-[rgba(139,92,246,0.12)] text-[#c4b5fd]"
           )}
         >
           {review.clientInitials}

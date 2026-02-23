@@ -41,7 +41,7 @@ export function DashboardSidebar() {
   return (
     <aside
       className={cn(
-        "relative flex h-screen flex-col border-r border-border/70 bg-gradient-to-b from-[#070218] via-[#05030f] to-[#02000a] transition-all duration-300",
+        "relative flex h-screen flex-col border-r border-[#8b5cf6]/25 bg-[radial-gradient(circle_at_top_left,#111827_0,#050316_45%,#000000_100%)] shadow-[0_0_45px_rgba(0,0,0,0.95)] backdrop-blur-xl transition-all duration-300",
         collapsed ? "w-[80px]" : "w-[260px]"
       )}
     >
@@ -80,13 +80,20 @@ export function DashboardSidebar() {
           >
             <div
               className={cn(
-                "flex size-9 items-center justify-center rounded-xl border border-transparent bg-transparent transition-colors",
-                activeItem === item.key
-                  ? "border-primary/40 bg-primary/15 shadow-[0_0_12px_rgba(168,85,247,0.55)]"
+                  "flex size-9 items-center justify-center rounded-xl border border-transparent bg-transparent transition-all group-hover:border-[#8b5cf6]/50 group-hover:bg-[#1b1036] group-hover:shadow-[0_0_18px_rgba(139,92,246,0.95)]",
+                  activeItem === item.key
+                    ? "border-primary/40 bg-primary/15 shadow-[0_0_14px_rgba(139,92,246,0.8)]"
                   : "bg-sidebar-accent/10 group-hover:bg-sidebar-accent/40"
               )}
             >
-              <item.icon className="size-5 shrink-0" />
+              <item.icon
+                className={cn(
+                  "size-5 shrink-0 transition-colors",
+                  activeItem === item.key
+                    ? "text-[#8b5cf6]"
+                    : "text-muted-foreground group-hover:text-[#8b5cf6]"
+                )}
+              />
             </div>
             {!collapsed && <span>{item.label}</span>}
           </button>

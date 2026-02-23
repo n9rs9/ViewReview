@@ -4,39 +4,55 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.13 0.015 285);
-  --foreground: oklch(0.95 0.01 285);
-  --card: oklch(0.18 0.02 285);
-  --card-foreground: oklch(0.95 0.01 285);
-  --popover: oklch(0.18 0.02 285);
-  --popover-foreground: oklch(0.95 0.01 285);
-  --primary: oklch(0.65 0.2 285);
-  --primary-foreground: oklch(0.98 0.005 285);
-  --secondary: oklch(0.22 0.025 285);
+  /* Fond noir profond + ambiance violet néon */
+  --background: #000000;
+  --foreground: oklch(0.97 0.02 285);
+
+  /* Cartes en verre sombre avec légère transparence */
+  --card: rgba(15, 15, 25, 0.9);
+  --card-foreground: var(--foreground);
+  --popover: rgba(15, 15, 25, 0.94);
+  --popover-foreground: var(--foreground);
+
+  /* Violet principal (remplace le jaune / accent) */
+  --primary: #8b5cf6;
+  --primary-foreground: #f9f5ff;
+
+  --secondary: rgba(30, 30, 45, 0.95);
   --secondary-foreground: oklch(0.9 0.015 285);
-  --muted: oklch(0.22 0.025 285);
-  --muted-foreground: oklch(0.6 0.03 285);
-  --accent: oklch(0.55 0.18 285);
-  --accent-foreground: oklch(0.98 0.005 285);
+
+  --muted: rgba(30, 30, 50, 0.85);
+  --muted-foreground: oklch(0.7 0.03 285);
+
+  --accent: #8b5cf6;
+  --accent-foreground: #f9f5ff;
+
   --destructive: oklch(0.55 0.22 27);
-  --destructive-foreground: oklch(0.55 0.22 27);
-  --border: oklch(0.26 0.035 285);
-  --input: oklch(0.26 0.035 285);
-  --ring: oklch(0.65 0.2 285);
-  --chart-1: oklch(0.65 0.2 285);
+  --destructive-foreground: oklch(0.95 0.03 27);
+
+  /* Bordures ultra-fines et légèrement lumineuses */
+  --border: rgba(139, 92, 246, 0.24);
+  --input: rgba(60, 60, 90, 0.95);
+  --ring: #8b5cf6;
+
+  /* Courbe & chart principaux en violet */
+  --chart-1: #8b5cf6;
   --chart-2: oklch(0.7 0.17 162);
   --chart-3: oklch(0.77 0.19 70);
   --chart-4: oklch(0.63 0.26 304);
   --chart-5: oklch(0.65 0.25 16);
+
   --radius: 0.75rem;
-  --sidebar: oklch(0.15 0.02 285);
-  --sidebar-foreground: oklch(0.95 0.01 285);
-  --sidebar-primary: oklch(0.65 0.2 285);
-  --sidebar-primary-foreground: oklch(0.98 0.005 285);
-  --sidebar-accent: oklch(0.24 0.03 285);
-  --sidebar-accent-foreground: oklch(0.95 0.01 285);
-  --sidebar-border: oklch(0.26 0.035 285);
-  --sidebar-ring: oklch(0.65 0.2 285);
+
+  /* Sidebar plus détachée du fond */
+  --sidebar: rgba(5, 5, 15, 0.98);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: #8b5cf6;
+  --sidebar-primary-foreground: #f9f5ff;
+  --sidebar-accent: rgba(32, 30, 55, 0.95);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: rgba(139, 92, 246, 0.3);
+  --sidebar-ring: #8b5cf6;
 }
 
 @theme inline {
@@ -85,6 +101,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
 }

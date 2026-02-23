@@ -46,7 +46,7 @@ function Sparkline({ data }: { data: SparklinePoint[] }) {
             stroke="var(--chart-1)"
             strokeWidth={1.6}
             fill="url(#sparklineGradient)"
-            className="drop-shadow-[0_0_8px_rgba(168,85,247,0.75)]"
+            className="drop-shadow-[0_0_12px_rgba(139,92,246,0.9)]"
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -89,17 +89,17 @@ export function StatsBar({
       {cards.map((card) => (
         <div
           key={card.label}
-          className="flex flex-col justify-between gap-2 rounded-2xl border border-border/60 bg-[#0a0616] p-4 shadow-md shadow-primary/10"
+          className="group flex flex-col justify-between gap-2 rounded-3xl border border-[#8b5cf6]/30 bg-[rgba(15,15,25,0.9)] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.9)] backdrop-blur-2xl"
         >
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/15">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/15 transition-all group-hover:bg-primary/25 group-hover:shadow-[0_0_18px_rgba(139,92,246,0.95)]">
               <card.icon className="size-5 text-primary" />
             </div>
             <div className="flex flex-1 flex-col gap-1">
               <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {card.label}
               </span>
-              <span className="text-xl font-semibold text-foreground">
+              <span className="text-3xl font-bold tracking-tight text-foreground">
                 {card.value}
               </span>
               <span className="text-[11px] text-muted-foreground">
