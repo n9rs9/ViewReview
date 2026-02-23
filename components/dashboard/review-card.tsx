@@ -71,7 +71,7 @@ export function ReviewCard({ review }: { review: Review }) {
                 className={cn(
                   "size-3.5",
                   index < roundedRating
-                    ? "fill-amber-400 text-amber-400"
+                    ? "fill-primary text-primary"
                     : "text-muted-foreground/30"
                 )}
               />

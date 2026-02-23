@@ -5,6 +5,7 @@ import {
   formatDistanceToNow,
   format,
   startOfDay,
+  startOfMonth,
   subDays,
 } from "date-fns"
 import { fr } from "date-fns/locale"
@@ -53,17 +54,25 @@ function buildStats(reviews: Review[]) {
       totalReviews: 0,
       averageRating: null,
       positivePercentage: null,
+      reviewsThisMonth: 0,
     }
   }
+
+  const now = new Date()
+  const monthStart = startOfMonth(now)
 
   const sum = reviews.reduce((acc, r) => acc + (r.rating || 0), 0)
   const averageRating = sum / total
   const positiveCount = reviews.filter((r) => r.rating >= 4).length
+  const reviewsThisMonth = reviews.filter(
+    (r) => new Date(r.createdAt) >= monthStart
+  ).length
 
   return {
     totalReviews: total,
     averageRating,
     positivePercentage: (positiveCount / total) * 100,
+    reviewsThisMonth,
   }
 }
 
@@ -97,7 +106,7 @@ function buildTrendData(reviews: Review[]): TrendPoint[] {
 
 function ReviewTrendChart({ data }: { data: TrendPoint[] }) {
   return (
-    <Card className="h-full border-border/60 bg-card/95 shadow-sm">
+    <Card className="h-full rounded-2xl border border-border/70 bg-[#0a0616] shadow-xl shadow-primary/20">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           Évolution du nombre d'avis (7 derniers jours)
@@ -156,8 +165,10 @@ function ReviewTrendChart({ data }: { data: TrendPoint[] }) {
               type="monotone"
               dataKey="value"
               stroke="var(--chart-1)"
-              strokeWidth={2.2}
+              strokeWidth={2.4}
+              strokeOpacity={0.95}
               fill="url(#reviewsGradient)"
+              className="drop-shadow-[0_0_16px_rgba(168,85,247,0.9)]"
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -174,6 +185,7 @@ export default function Page() {
   const [positivePercentage, setPositivePercentage] = useState<number | null>(
     null
   )
+  const [reviewsThisMonth, setReviewsThisMonth] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -249,6 +261,7 @@ export default function Page() {
         setTotalReviews(stats.totalReviews)
         setAverageRating(stats.averageRating)
         setPositivePercentage(stats.positivePercentage)
+        setReviewsThisMonth(stats.reviewsThisMonth)
         setTrendData(trend)
       } finally {
         if (isMounted) {
@@ -265,7 +278,7 @@ export default function Page() {
   }, [])
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden bg-[#05030f]">
       <DashboardSidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <DashboardHeader />
@@ -276,7 +289,8 @@ export default function Page() {
                 <StatsBar
                   totalReviews={totalReviews}
                   averageRating={averageRating}
-                  positivePercentage={positivePercentage}
+                  reviewsThisMonth={reviewsThisMonth}
+                  sparklineData={trendData}
                 />
               </div>
               <div className="lg:col-span-2">
