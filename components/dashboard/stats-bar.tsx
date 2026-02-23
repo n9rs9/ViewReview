@@ -1,69 +1,63 @@
-import { Badge } from "@/components/ui/badge"
-import { MessageSquareText, TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { MessageSquareText, Star, ThumbsUp } from "lucide-react"
 
-const stats = [
-  {
-    label: "Total Reviews",
-    value: "1,284",
-    icon: MessageSquareText,
-    change: "+12%",
-    trend: "up" as const,
-  },
-  {
-    label: "Positive",
-    value: "842",
-    icon: TrendingUp,
-    change: "+8%",
-    trend: "up" as const,
-  },
-  {
-    label: "Neutral",
-    value: "319",
-    icon: Minus,
-    change: "-2%",
-    trend: "neutral" as const,
-  },
-  {
-    label: "Negative",
-    value: "123",
-    icon: TrendingDown,
-    change: "-5%",
-    trend: "down" as const,
-  },
-]
+interface StatsBarProps {
+  totalReviews: number
+  averageRating: number | null
+  positivePercentage: number | null
+}
 
-export function StatsBar() {
+export function StatsBar({
+  totalReviews,
+  averageRating,
+  positivePercentage,
+}: StatsBarProps) {
+  const cards = [
+    {
+      label: "Total d'avis",
+      value: totalReviews.toLocaleString("fr-FR"),
+      helper: "Tous les avis collectés",
+      icon: MessageSquareText,
+    },
+    {
+      label: "Note moyenne",
+      value:
+        averageRating && averageRating > 0
+          ? `${averageRating.toFixed(1)}/5`
+          : "—",
+      helper: "Basée sur les notes clients",
+      icon: Star,
+    },
+    {
+      label: "Avis positifs",
+      value:
+        positivePercentage != null
+          ? `${Math.round(positivePercentage)}%`
+          : "—",
+      helper: "Notes de 4 à 5 étoiles",
+      icon: ThumbsUp,
+    },
+  ]
+
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      {stats.map((stat) => (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {cards.map((card) => (
         <div
-          key={stat.label}
-          className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4"
+          key={card.label}
+          className="flex items-center gap-4 rounded-2xl border border-border/60 bg-card/95 p-4 shadow-sm backdrop-blur-sm"
         >
-          <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-            <stat.icon className="size-5 text-primary" />
+          <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10">
+            <card.icon className="size-5 text-primary" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">
-              {stat.label}
+          <div className="flex flex-1 flex-col gap-1">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {card.label}
             </span>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-foreground">
-                {stat.value}
-              </span>
-              <Badge
-                variant="outline"
-                className={
-                  stat.trend === "up"
-                    ? "border-transparent bg-emerald-500/15 text-emerald-400 text-[10px] px-1.5 py-0"
-                    : stat.trend === "down"
-                    ? "border-transparent bg-rose-500/15 text-rose-400 text-[10px] px-1.5 py-0"
-                    : "border-transparent bg-amber-500/15 text-amber-400 text-[10px] px-1.5 py-0"
-                }
-              >
-                {stat.change}
-              </Badge>
-            </div>
+            <span className="text-xl font-semibold text-foreground">
+              {card.value}
+            </span>
+            <span className="text-[11px] text-muted-foreground">
+              {card.helper}
+            </span>
           </div>
         </div>
       ))}
