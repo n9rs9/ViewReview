@@ -1,65 +1,95 @@
+"use client" // On passe en mode client pour stabiliser la session
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
-import { redirect } from "next/navigation" // Import crucial pour la redirection propre
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { StatsBar } from "@/components/dashboard/stats-bar"
 import { ReviewGrid } from "@/components/dashboard/review-grid"
-import { supabase } from "@/lib/supabase"
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser"
 import type { Review, Sentiment } from "@/components/dashboard/review-card"
 
-export const dynamic = "force-dynamic"
-
-// Initiales pour l'avatar
-function getInitials(name: string): string {
-  const parts = String(name || "").trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return "??"
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-  return (parts[0][0] + parts[1][0]).toUpperCase()
-}
-
-// Normalisation du sentiment pour le composant UI
-function normalizeSentiment(value: unknown): Sentiment {
-  const s = String(value ?? "").toLowerCase()
-  if (s === "positive" || s === "neutral" || s === "negative") return s
-  return "neutral"
-}
-
-export default async function Page() {
-  // 1. Vérification de la session côté Serveur
-  const { data: { session } } = await supabase.auth.getSession()
+export default function Page() {
+  const router = useRouter()
+  const supabase = getSupabaseBrowserClient()
   
-  // Si pas de session, redirection immédiate vers /login
-  if (!session) {
-    redirect("/login")
+  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
+  const [reviews, setReviews] = useState<Review[]>([])
+
+  useEffect(() => {
+    async function loadDashboard() {
+      // 1. Vérification stricte de l'utilisateur
+      const { data: { user }, error } = await supabase.auth.getUser()
+      
+      if (error || !user) {
+        router.push("/login")
+        return
+      }
+      setUser(user)
+
+      // 2. Récupération du profil (Slot Unique) sans crash .single()
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("google_maps_url")
+        .eq("user_id", user.id)
+        .limit(1)
+
+      if (profiles && profiles.length > 0) {
+        setProfile(profiles[0])
+      }
+
+      // 3. Récupération des avis filtrés par user_id
+      const { data: reviewsData } = await supabase
+        .from("reviews")
+        .select("id, client_name, review_text, sentiment, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+
+      if (reviewsData) {
+        const formattedReviews: Review[] = reviewsData.map((row) => ({
+          id: String(row.id),
+          clientName: row.client_name ?? "Anonyme",
+          clientInitials: (row.client_name ?? "??").slice(0, 2).toUpperCase(),
+          text: row.review_text ?? "",
+          sentiment: (row.sentiment?.toLowerCase() || "neutral") as Sentiment,
+          timestamp: row.created_at
+            ? formatDistanceToNow(new Date(row.created_at), { addSuffix: true, locale: fr })
+            : "—",
+        }))
+        setReviews(formattedReviews)
+      }
+      
+      setLoading(false)
+    }
+
+    loadDashboard()
+  }, [router, supabase])
+
+  // Gestion de l'action de formulaire
+  async function handleAddShop(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const url = formData.get("url")
+
+    const { error } = await supabase.from("profiles").insert([{ 
+      user_id: user.id, 
+      google_maps_url: url 
+    }])
+
+    if (!error) window.location.reload()
   }
 
-  const userId = session.user.id
-
-  // 2. Vérification si l'utilisateur a déjà configuré son commerce (Profiles)
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("google_maps_url")
-    .eq("user_id", userId)
-    .single()
-
-  // 3. Récupération des avis associés à cet utilisateur spécifique
-  const { data: reviewsData } = await supabase
-    .from("reviews")
-    .select("id, client_name, review_text, sentiment, created_at")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-
-  const reviews: Review[] = (reviewsData ?? []).map((row) => ({
-    id: String(row.id),
-    clientName: row.client_name ?? "Anonyme",
-    clientInitials: getInitials(row.client_name ?? ""),
-    text: row.review_text ?? "",
-    sentiment: normalizeSentiment(row.sentiment),
-    timestamp: row.created_at
-      ? formatDistanceToNow(new Date(row.created_at), { addSuffix: true, locale: fr })
-      : "—",
-  }))
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="animate-pulse text-lg font-medium">Chargement du Dashboard...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -70,38 +100,26 @@ export default async function Page() {
           <div className="mx-auto flex max-w-7xl flex-col gap-6">
             
             {!profile ? (
-              /* ÉTAT : Premier passage - Formulaire de lien Google Maps */
-              <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted p-12 transition-all bg-card/50">
-                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-3xl">
-                  🏪
-                </div>
-                <h2 className="text-2xl font-bold tracking-tight">Liez votre commerce</h2>
+              /* ÉTAT : Configuration du premier commerce */
+              <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted p-12 bg-card/50">
+                <div className="mb-4 text-4xl">🏪</div>
+                <h2 className="text-2xl font-bold tracking-tight text-center">Liez votre commerce</h2>
                 <p className="mt-2 text-center text-muted-foreground max-w-sm">
-                  Entrez l'URL Google Maps pour que l'IA commence à analyser vos avis.
+                  Entrez l'URL Google Maps pour lancer l'analyse IA.
                 </p>
-                <div className="mt-6 w-full max-w-md p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 dark:text-amber-400 text-sm font-medium">
-                  ⚠️ Slot Unique : Vous ne pouvez suivre qu'un seul établissement. Ce choix ne pourra pas être modifié par la suite.
+                <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 text-sm font-medium">
+                  ⚠️ Slot Unique : Un seul établissement possible.
                 </div>
                 
-                <form action={async (formData) => {
-                  "use server"
-                  const url = formData.get("url")
-                  const { supabase } = await import("@/lib/supabase")
-                  // On enregistre le lien avec l'ID de l'utilisateur actuel
-                  await supabase.from("profiles").insert([{ 
-                    user_id: userId, 
-                    google_maps_url: url 
-                  }])
-                  // Force le rafraîchissement pour passer à l'état Dashboard
-                }} className="mt-8 flex w-full max-w-md gap-3">
+                <form onSubmit={handleAddShop} className="mt-8 flex w-full max-w-md gap-3">
                   <input 
                     name="url"
                     type="url" 
-                    placeholder="https://www.google.com/maps/place/..." 
-                    className="flex-1 rounded-md border border-input bg-background px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                    placeholder="Lien Google Maps..." 
+                    className="flex-1 rounded-md border border-input bg-background px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
-                  <button type="submit" className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+                  <button type="submit" className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
                     Activer
                   </button>
                 </form>
@@ -115,20 +133,16 @@ export default async function Page() {
                     <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                       Dernières Analyses
                     </h2>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full">
-                      <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                      Sync avec votre compte
-                    </div>
                   </div>
                   
                   {reviews.length > 0 ? (
                     <ReviewGrid reviews={reviews} />
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-24 border rounded-xl bg-muted/20">
+                    <div className="flex flex-col items-center justify-center py-24 border rounded-xl bg-muted/20 text-center">
                       <div className="animate-bounce mb-4 text-3xl">🚀</div>
-                      <p className="text-foreground font-semibold">Analyse initiale en cours...</p>
-                      <p className="text-sm text-muted-foreground mt-2 max-w-xs text-center">
-                        Notre IA traite actuellement vos données. Cela prend généralement entre 2 et 5 minutes.
+                      <p className="font-semibold text-foreground">Analyse initiale en cours...</p>
+                      <p className="text-sm text-muted-foreground mt-2 max-w-xs">
+                        L'IA traite vos avis. Cela prend généralement 2 à 5 minutes.
                       </p>
                     </div>
                   )}
