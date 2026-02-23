@@ -41,13 +41,13 @@ export function DashboardSidebar() {
   return (
     <aside
       className={cn(
-        "relative flex h-screen flex-col border-r border-border/70 bg-[#04030a] transition-all duration-300",
+        "relative flex h-screen flex-col border-r border-border/70 bg-gradient-to-b from-[#070218] via-[#05030f] to-[#02000a] transition-all duration-300",
         collapsed ? "w-[80px]" : "w-[260px]"
       )}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-border/70 px-5">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary">
+      <div className="flex h-20 items-center gap-3 border-b border-border/70 px-5">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-primary/90 shadow-lg shadow-primary/40">
           <Star className="size-4 text-primary-foreground" />
         </div>
         {!collapsed && (
@@ -61,7 +61,7 @@ export function DashboardSidebar() {
       <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
         <span
           className={cn(
-            "mb-2 px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
+            "mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80",
             collapsed && "sr-only"
           )}
         >
@@ -72,25 +72,34 @@ export function DashboardSidebar() {
             key={item.key}
             onClick={() => setActiveItem(item.key)}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              "group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors",
               activeItem === item.key
                 ? "bg-primary/15 text-primary shadow-sm shadow-primary/20"
                 : "text-muted-foreground hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
             )}
           >
-            <item.icon className="size-5 shrink-0" />
+            <div
+              className={cn(
+                "flex size-9 items-center justify-center rounded-xl border border-transparent bg-transparent transition-colors",
+                activeItem === item.key
+                  ? "border-primary/40 bg-primary/15 shadow-[0_0_12px_rgba(168,85,247,0.55)]"
+                  : "bg-sidebar-accent/10 group-hover:bg-sidebar-accent/40"
+              )}
+            >
+              <item.icon className="size-5 shrink-0" />
+            </div>
             {!collapsed && <span>{item.label}</span>}
           </button>
         ))}
       </nav>
 
       {/* Bottom actions */}
-      <div className="border-t border-border/70 p-3 space-y-2">
+      <div className="space-y-2 border-t border-border/70 p-3">
         <button
           onClick={handleLogout}
           disabled={loggingOut}
           className={cn(
-            "flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-destructive transition-colors",
+            "flex w-full items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-medium text-destructive transition-colors",
             "hover:bg-destructive/10 hover:text-destructive"
           )}
         >
@@ -99,7 +108,7 @@ export function DashboardSidebar() {
         </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="flex w-full items-center justify-center rounded-xl px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          className="flex w-full items-center justify-center rounded-2xl px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           aria-label={collapsed ? "Agrandir la sidebar" : "Réduire la sidebar"}
         >
           {collapsed ? (
