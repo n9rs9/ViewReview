@@ -41,7 +41,8 @@ export function DashboardHeader() {
     const supabase = getSupabaseBrowserClient()
 
     await supabase.auth.signOut()
-    router.replace("/login")
+    router.push("/login")
+    router.refresh()
   }
 
   return (
