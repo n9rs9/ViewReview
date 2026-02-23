@@ -1,4 +1,4 @@
-"use client" // On passe en mode client pour stabiliser la session
+"use client"
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -22,7 +22,6 @@ export default function Page() {
 
   useEffect(() => {
     async function loadDashboard() {
-      // 1. Vérification stricte de l'utilisateur
       const { data: { user }, error } = await supabase.auth.getUser()
       
       if (error || !user) {
@@ -31,7 +30,6 @@ export default function Page() {
       }
       setUser(user)
 
-      // 2. Récupération du profil (Slot Unique) sans crash .single()
       const { data: profiles } = await supabase
         .from("profiles")
         .select("google_maps_url")
@@ -42,7 +40,6 @@ export default function Page() {
         setProfile(profiles[0])
       }
 
-      // 3. Récupération des avis filtrés par user_id
       const { data: reviewsData } = await supabase
         .from("reviews")
         .select("id, client_name, review_text, sentiment, created_at")
@@ -69,18 +66,33 @@ export default function Page() {
     loadDashboard()
   }, [router, supabase])
 
-  // Gestion de l'action de formulaire
   async function handleAddShop(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const url = formData.get("url")
 
-    const { error } = await supabase.from("profiles").insert([{ 
+    // 1. Sauvegarde dans Supabase
+    const { error: insertError } = await supabase.from("profiles").insert([{ 
       user_id: user.id, 
       google_maps_url: url 
     }])
 
-    if (!error) window.location.reload()
+    if (!insertError) {
+      // 2. Appel au Webhook n8n via Ngrok
+      // On utilise l'URL que tu as fournie (ajustée pour le webhook)
+      try {
+        await fetch("https://suellen-unwormy-ernestine.ngrok-free.dev/webhook-test/nouveau-commerce", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: user.id }),
+        })
+      } catch (err) {
+        console.error("Erreur Webhook:", err)
+      }
+
+      // 3. Rafraîchissement pour passer à l'état "Analyse en cours"
+      window.location.reload()
+    }
   }
 
   if (loading) {
@@ -100,7 +112,6 @@ export default function Page() {
           <div className="mx-auto flex max-w-7xl flex-col gap-6">
             
             {!profile ? (
-              /* ÉTAT : Configuration du premier commerce */
               <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted p-12 bg-card/50">
                 <div className="mb-4 text-4xl">🏪</div>
                 <h2 className="text-2xl font-bold tracking-tight text-center">Liez votre commerce</h2>
@@ -125,7 +136,6 @@ export default function Page() {
                 </form>
               </div>
             ) : (
-              /* ÉTAT : Dashboard Actif avec analyses filtrées */
               <>
                 <StatsBar />
                 <div className="space-y-4">
